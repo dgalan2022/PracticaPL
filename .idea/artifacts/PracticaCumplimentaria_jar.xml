@@ -1,9 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="PracticaCumplimentaria:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/PracticaCumplimentaria_jar</output-path>
-    <root id="archive" name="PracticaCumplimentaria.jar">
-      <element id="module-output" name="PracticaCumplimentaria" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../../../../../../../../Program Files/ANTLR/antlr-4.13.2-complete.jar" path-in-jar="/" />
-    </root>
-  </artifact>
-</component>
