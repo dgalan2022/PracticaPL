@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.regex.*;
 }
 
-// Primero se imprime la cabecera HTML
+// Primero se imprime la cabecera HTML Prueba
 prog: {
     System.out.println("<!DOCTYPE html>");
     System.out.println("<html>");
