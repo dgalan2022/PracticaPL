@@ -9,6 +9,7 @@ import java.util.regex.*;
 prog: {
     System.out.println("<!DOCTYPE html>");
     System.out.println("<html>");
+    
     System.out.println("<head>");
     System.out.println("<title>MarkDown3HTML</title>");
     System.out.println("<style>");
@@ -17,6 +18,7 @@ prog: {
     System.out.println("</style>");
     System.out.println("</head>");
     System.out.println("<body>");
+    
 }
 document EOF {
     // Cierra el HTML
