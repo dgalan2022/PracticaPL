@@ -1,4 +1,4 @@
-lexer grammar NavasMartinez;
+grammar NavasMartinez;
 
 //PALABRAS RESERVADAS (Keywords)
 //Nota: Las palabras reservadas de tu lenguaje (como 'if', 'while', etc.) deben ir definidas AQUÍ, ANTES de la regla IDENT. 
