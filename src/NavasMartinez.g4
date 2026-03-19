@@ -1,54 +1,226 @@
 grammar NavasMartinez;
 
-//PALABRAS RESERVADAS (Keywords)
-//Nota: Las palabras reservadas de tu lenguaje (como 'if', 'while', etc.) deben ir definidas AQUÍ, ANTES de la regla IDENT. 
-//De esta forma, el lexer les dará prioridad y no las confundirá con identificadores.
-//EJEMPLO:
-//IF_KW   : 'if' ;
-//THEN_KW : 'then' ;
+// Reglas Sintácticas
+// Axioma
+prog
+    : 'PROGRAM' IDENT ';' dcllist cabecera sentlist 'END' 'PROGRAM' IDENT subproglist EOF
+    ;
 
+// constantes y variables
+dcllist
+    : dcl*
+    ;
 
-//CONSTANTES LITERALES (Cadenas de texto)
-//Permiten cualquier carácter. Si el delimitador aparece dentro, debe estar duplicado ('') o ("").
+dcl
+    : tipo ',' 'PARAMETER' '::' IDENT '=' simpvalue ctelist ';'
+    | tipo '::' varlist ';'
+    ;
 
+ctelist
+    :
+    | ',' IDENT '=' simpvalue ctelist
+    ;
+
+simpvalue
+    : NUM_INT_CONST
+    | NUM_REAL_CONST
+    | STRING_CONST
+    ;
+
+varlist
+    : IDENT init varlistRest
+    ;
+
+varlistRest
+    :
+    | ',' IDENT init varlistRest
+    ;
+
+init
+    :
+    | '=' simpvalue
+    ;
+
+tipo
+    : 'INTEGER'
+    | 'REAL'
+    | 'CHARACTER' charlength
+    ;
+
+charlength
+    :
+    | '(' NUM_INT_CONST ')'
+    ;
+
+// Declaración de cabecera
+cabecera
+    :
+    | 'INTERFACE' cablist 'END' 'INTERFACE'
+    ;
+
+cablist
+    : decsubprog+
+    ;
+
+decsubprog
+    : decproc
+    | decfun
+    ;
+
+// Declaración de procedimiento
+decproc
+    : 'SUBROUTINE' IDENT formal_paramlist dec_s_paramlist 'END' 'SUBROUTINE' IDENT
+    ;
+
+formal_paramlist
+    :
+    | '(' nomparamlist ')'
+    ;
+
+nomparamlist
+    : IDENT nomparamlistRest
+    ;
+
+nomparamlistRest
+    :
+    | ',' IDENT nomparamlistRest
+    ;
+
+dec_s_paramlist
+    :
+    | tipo ',' 'INTENT' '(' tipoparam ')' IDENT ';' dec_s_paramlist
+    ;
+
+tipoparam
+    : 'IN'
+    | 'OUT'
+    | 'INOUT'
+    ;
+
+// Declaración de función
+decfun
+    : 'FUNCTION' IDENT '(' nomparamlist ')' tipo '::' IDENT ';'
+      dec_f_paramlist 'END' 'FUNCTION' IDENT
+    ;
+
+dec_f_paramlist
+    :
+    | tipo ',' 'INTENT' '(' tipoparam ')' IDENT ';' dec_f_paramlist
+    ;
+
+// Sentencias
+sentlist
+    : sent+
+    ;
+
+sent
+    : IDENT '=' exp ';'
+    | proc_call ';'
+    ;
+
+exp
+    : factor expRest
+    ;
+
+expRest
+    :
+    | op factor expRest
+    ;
+
+op
+    : '+'
+    | '-'
+    | '*'
+    | '/'
+    ;
+
+factor
+    : simpvalue
+    | '(' exp ')'
+    | IDENT '(' exp explist ')'
+    | IDENT
+    ;
+
+explist
+    :
+    | ',' exp explist
+    ;
+
+proc_call
+    : 'CALL' IDENT subpparamlist
+    ;
+
+subpparamlist
+    :
+    | '(' exp explist ')'
+    ;
+
+//Implementación de funciones y procedimientos
+subproglist
+    : (codproc | codfun)*
+    ;
+
+codproc
+    : 'SUBROUTINE' IDENT formal_paramlist dec_s_paramlist
+      dcllist sentlist
+      'END' 'SUBROUTINE' IDENT
+    ;
+
+codfun
+    : 'FUNCTION' IDENT '(' nomparamlist ')' tipo '::' IDENT ';'
+      dec_f_paramlist
+      dcllist sentlist
+      IDENT '=' exp ';'
+      'END' 'FUNCTION' IDENT
+    ;
+
+// Reglas Léxicas
+
+// Palabras reservadas
+PROGRAM_KW    : 'PROGRAM' ;
+END_KW        : 'END' ;
+INTERFACE_KW  : 'INTERFACE' ;
+SUBROUTINE_KW : 'SUBROUTINE' ;
+FUNCTION_KW   : 'FUNCTION' ;
+PARAMETER_KW  : 'PARAMETER' ;
+INTENT_KW     : 'INTENT' ;
+CALL_KW       : 'CALL' ;
+INTEGER_KW    : 'INTEGER' ;
+REAL_KW       : 'REAL' ;
+CHARACTER_KW  : 'CHARACTER' ;
+IN_KW         : 'IN' ;
+OUT_KW        : 'OUT' ;
+INOUT_KW      : 'INOUT' ;
+
+// Constantes literales
 STRING_CONST
     : '\'' ( '\'\'' | ~['] )* '\''
     | '"'  ( '""'   | ~["] )* '"'
     ;
 
-//CONSTANTES NUMÉRICAS (Reales y Enteros)
-//IMPORTANTE: NUM_REAL_CONST debe declararse antes que NUM_INT_CONST para que el analizador léxico intente emparejar primero la versión más larga (el real).
-
+// Constantes numéricas
 NUM_REAL_CONST
-    : '-'? DIGIT+ '.' DIGIT+ ( [eE] '-'? DIGIT+ )?  //Punto fijo y Mixto
-    | '-'? DIGIT+ [eE] '-'? DIGIT+                  //Exponencial
+    : '-'? DIGIT+ '.' DIGIT+ ( [eE] '-'? DIGIT+ )?
+    | '-'? DIGIT+ [eE] '-'? DIGIT+
     ;
 
 NUM_INT_CONST
     : '-'? DIGIT+
     ;
 
-//Regla fragmentada para reutilizar el concepto de dígito internamente
-fragment DIGIT
-    : [0-9]
-    ;
+fragment DIGIT : [0-9] ;
 
-//IDENTIFICADORES
-//Obligatorio empezar por letra, seguido de letras, dígitos o guiones bajos.
-//Alfabeto inglés (sin eñes ni acentos).
-
+// Identificadores
 IDENT
     : [a-zA-Z] [a-zA-Z0-9_]*
     ;
 
-//COMENTARIOS Y ESPACIOS EN BLANCO
-
-//Comentarios: empiezan con '!' y terminan al final de la línea. Se ignoran (skip).
+// Comentarios
 COMMENT
     : '!' ~[\r\n]* -> skip
     ;
 
-//Ignorar espacios en blanco, tabulaciones y saltos de línea
+// Espacios en blanco
 WS
     : [ \t\r\n]+ -> skip
     ;

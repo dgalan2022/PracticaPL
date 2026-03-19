@@ -1,33 +1,35 @@
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 
 public class NavasMartinez {
     public static void main(String[] args) {
         try {
-            // Determina entrada entre archivo o stdin
-            InputStream is = System.in;
-            if (args.length > 0) {
-                is = new FileInputStream(args[0]);
+            // Comprueba el archivo de entrada
+            if (args.length == 0) {
+                System.err.println("Debes indicar un fichero de entrada");
+                System.exit(1);
             }
 
-            // Configura lexer y parser
-            CharStream input = CharStreams.fromStream(is);
+            String archivoEntrada = args[0];
+            CharStream input = CharStreams.fromFileName(archivoEntrada);
+
+            // Configura el lexer
             NavasMartinezLexer lexer = new NavasMartinezLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+            // Configura el parser
             NavasMartinezParser parser = new NavasMartinezParser(tokens);
 
-            // Desactiva mensajes de error
-            parser.removeErrorListeners();
-
-            // Ejecuta el parser
-            parser.prog();
+            // Ejecuta el parser desde el axioma
+            ParseTree tree = parser.prog();
 
             System.out.flush();
 
         } catch (java.io.FileNotFoundException e) {
-            System.err.println("Error: Archivo no encontrado.");
+            System.err.println("Error: Archivo no encontrado - " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Error de entrada/salida: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
         }

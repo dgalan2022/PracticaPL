@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ANTLRGenerationPreferences">
     <option name="perGrammarGenerationSettings">
@@ -5,7 +6,7 @@
         <PerGrammarGenerationSettings>
           <option name="fileName" value="$PROJECT_DIR$/src/NavasMartinez.g4" />
           <option name="autoGen" value="true" />
-          <option name="outputDir" value="C:\Users\Personal\Desktop\UNI\Curso 4\Segundo Cuatri\PL\Practicas\Complementaria\NavasMartinez\src" />
+          <option name="outputDir" value="C:\Users\Personal\Desktop\UNI\Curso 4\Segundo Cuatri\PL\Practicas\Obligatoria\PracticaPL\ArchivosANTLR" />
           <option name="libDir" value="" />
           <option name="encoding" value="" />
           <option name="pkg" value="" />
