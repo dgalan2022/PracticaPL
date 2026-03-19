@@ -2,7 +2,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import java.io.*;
 
-public class NavasMartinez {
+public class Grupo11 {
     public static void main(String[] args) {
         try {
             // Comprueba el archivo de entrada
@@ -15,11 +15,11 @@ public class NavasMartinez {
             CharStream input = CharStreams.fromFileName(archivoEntrada);
 
             // Configura el lexer
-            NavasMartinezLexer lexer = new NavasMartinezLexer(input);
+            Grupo11Lexer lexer = new Grupo11Lexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
 
             // Configura el parser
-            NavasMartinezParser parser = new NavasMartinezParser(tokens);
+            Grupo11Parser parser = new Grupo11Parser(tokens);
 
             // Ejecuta el parser desde el axioma
             ParseTree tree = parser.prog();

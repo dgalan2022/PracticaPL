@@ -1,4 +1,4 @@
-grammar NavasMartinez;
+grammar Grupo11;
 
 // Reglas Sintácticas
 // Axioma

@@ -2,7 +2,7 @@
   <artifact type="jar" name="NavasMartinez:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/NavasMartinez_jar</output-path>
     <root id="archive" name="NavasMartinez.jar">
-      <element id="module-output" name="NavasMartinez" />
+      <element id="module-output" name="Grupo11" />
       <element id="extracted-dir" path="$PROJECT_DIR$/antlr-4.13.2-complete.jar" path-in-jar="/" />
     </root>
   </artifact>
