@@ -18,7 +18,9 @@ END PROGRAM TraduccionSubprogramas
 
 FUNCTION Doble (n) INTEGER :: Doble;
   INTEGER , INTENT(IN) n;
-  Doble = n * 2;
+  INTEGER :: aux;
+  aux = n * 2;
+  Doble = aux;
 END FUNCTION Doble
 
 SUBROUTINE Resetear (v)
