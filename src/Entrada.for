@@ -1,67 +1,43 @@
-PROGRAM prueba_completa;
+PROGRAM prog1 ;
+INTEGER, PARAMETER :: max_val = 100, min_val = -50;
+REAL, PARAMETER :: pi = 3.1415, e = 2.71828, c = 2e-6;
 
-! Declaracion de constantes
-INTEGER , PARAMETER :: bloque = 1024;
-REAL , PARAMETER :: PI = 3.141592, E = 2.718281;
-CHARACTER (2) , PARAMETER :: S = 'SI', N = 'NO';
+INTEGER :: contador = 0, acumulador;
+REAL :: promedio, total = 0.0;
+CHARACTER(10) :: mensaje1 = 'Hola', mensaje2 = 'Mundo';
 
-! Declaracion de variables
-INTEGER :: var1, var2 = 24;
-REAL :: var3;
-CHARACTER :: var4, var5 = 'hola', var6;
-CHARACTER (10) :: var7, var8;
+    INTERFACE
 
-! Cabecera de funciones y procedimientos
-INTERFACE
+        SUBROUTINE ImprimirMensaje(texto)
+            CHARACTER(10), INTENT(IN) texto;
+        END SUBROUTINE ImprimirMensaje
 
-SUBROUTINE proc1 ( c, d, e )
-    REAL , INTENT ( OUT ) c;
-    INTEGER , INTENT ( IN ) d;
-    INTEGER , INTENT ( INOUT ) e;
-END SUBROUTINE proc1
+        FUNCTION Sumar(a, b)
+            INTEGER :: Sumar;
+            INTEGER, INTENT(IN) a;
+            INTEGER, INTENT(IN) b;
+        END FUNCTION Sumar
 
-SUBROUTINE proc2
-END SUBROUTINE proc2
+    END INTERFACE
 
-FUNCTION fun1 ( a, b )
-    INTEGER :: fun1;
-    INTEGER , INTENT ( IN ) a;
-    INTEGER , INTENT ( IN ) b;
-END FUNCTION fun1
+    contador = contador + 1;
+    total = total + 45.6;
+    CALL ImprimirMensaje('Bienvenido');
+    promedio = total / 2.0;
 
-END INTERFACE
+END PROGRAM prog1
 
-! Sentencias del programa principal
-var1 = 5;
-var2 = var1 + 3;
-var3 = 1.5;
-var2 = var1 * var2 + 24;
-CALL proc2;
-CALL proc1 ( var3, var1, var2 );
-var1 = fun1 ( var1, var2 );
+SUBROUTINE ImprimirMensaje(texto)
+    CHARACTER(10), INTENT(IN) texto;
+    CALL MostrarEnPantalla(texto);
+END SUBROUTINE ImprimirMensaje
 
-END PROGRAM prueba_completa
+FUNCTION Sumar(a, b)
+    INTEGER :: Sumar;
+    INTEGER, INTENT(IN) a;
+    INTEGER, INTENT(IN) b;
 
-! Implementacion de procedimientos y funciones
-SUBROUTINE proc2
-    INTEGER :: local1;
-    local1 = 0;
-END SUBROUTINE proc2
-
-SUBROUTINE proc1 ( c, d, e )
-    REAL , INTENT ( OUT ) c;
-    INTEGER , INTENT ( IN ) d;
-    INTEGER , INTENT ( INOUT ) e;
-    INTEGER :: local2;
-    local2 = d + e;
-    c = 3.14;
-END SUBROUTINE proc1
-
-FUNCTION fun1 ( a, b )
-    INTEGER :: fun1;
-    INTEGER , INTENT ( IN ) a;
-    INTEGER , INTENT ( IN ) b;
-    INTEGER :: resultado;
-    resultado = a + b;
-    fun1 = resultado + 1;
-END FUNCTION fun1
+    INTEGER :: suma;
+    suma = a + b;
+    Sumar = suma;
+END FUNCTION Sumar

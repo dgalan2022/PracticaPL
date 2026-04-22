@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Grupo11:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Grupo11_jar</output-path>
+    <root id="archive" name="Grupo11.jar">
+      <element id="module-output" name="Grupo11" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/antlr-4.13.2-complete.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
