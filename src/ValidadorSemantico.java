@@ -6,6 +6,12 @@ public class ValidadorSemantico {
     private final List<String> errores = new ArrayList<>();
 
     public void validar(Grupo11Parser.ProgContext ctx) {
+        // Comprobación nombre inicial y final del PROGRAM
+        String nombreInicial = ctx.IDENT(0).getText();
+        String nombreFinal   = ctx.IDENT(1).getText();
+        if (!nombreInicial.equalsIgnoreCase(nombreFinal))
+            err("PROGRAM: nombre inicial '" + nombreInicial + "' != final '" + nombreFinal + "'");
+
         if (ctx.cabecera() != null && ctx.cabecera().cablist() != null) {
             for (int i = 0; i < ctx.cabecera().cablist().getChildCount(); i++) {
                 Object hijo = ctx.cabecera().cablist().getChild(i);
