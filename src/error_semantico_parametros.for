@@ -1,0 +1,15 @@
+PROGRAM ErrorParametros;
+INTERFACE
+  SUBROUTINE Suma ( a , b )
+    INTEGER , INTENT(IN) a;
+    INTEGER , INTENT(IN) b;
+  END SUBROUTINE Suma
+END INTERFACE
+CALL Suma(1, 2);
+END PROGRAM ErrorParametros
+
+SUBROUTINE Suma (a, b)
+  INTEGER , INTENT(IN) b;
+  INTEGER , INTENT(IN) a;
+  a = a + b;
+END SUBROUTINE Suma

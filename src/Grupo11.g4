@@ -1,17 +1,16 @@
 grammar Grupo11;
 
-// ═══════════════════════════════════════════════════
-// REGLAS SINTÁCTICAS
-// ═══════════════════════════════════════════════════
-
 prog
-    : 'PROGRAM' IDENT ';' dcllist cabecera sentlist 'END' 'PROGRAM' IDENT subproglist EOF
+    : PROGRAM_KW IDENT ';' dcllist cabecera sentlist END_KW PROGRAM_KW IDENT subproglist EOF
     ;
 
-dcllist : dcl* ;
+dcllist
+    :
+    | dcl dcllist
+    ;
 
 dcl
-    : tipo ',' 'PARAMETER' '::' IDENT '=' simpvalue ctelist ';'
+    : tipo ',' PARAMETER_KW '::' IDENT '=' simpvalue ctelist ';'
     | tipo '::' varlist ';'
     ;
 
@@ -36,58 +35,63 @@ varlistRest :  | ',' IDENT init varlistRest ;
 init        :  | '=' simpvalue ;
 
 tipo
-    : 'INTEGER'
-    | 'REAL'
-    | 'CHARACTER' charlength
+    : INTEGER_KW
+    | REAL_KW
+    | CHARACTER_KW charlength
     ;
 
 charlength :  | '(' NUM_INT_CONST ')' ;
 
 cabecera
     :
-    | 'INTERFACE' cablist 'END' 'INTERFACE'
+    | INTERFACE_KW cablist END_KW INTERFACE_KW
     ;
 
-cablist    : decsubprog+ ;
-decsubprog : decproc | decfun ;
+cablist     : decsubprog cablistRest ;
+cablistRest :  | decsubprog cablistRest ;
+decsubprog  : decproc | decfun ;
 
 decproc
-    : 'SUBROUTINE' IDENT formal_paramlist dec_s_paramlist 'END' 'SUBROUTINE' IDENT
+    : SUBROUTINE_KW IDENT formal_paramlist dec_s_paramlist END_KW SUBROUTINE_KW IDENT
     ;
 
 formal_paramlist :  | '(' nomparamlist ')' ;
 nomparamlist     : IDENT nomparamlistRest ;
 nomparamlistRest :  | ',' IDENT nomparamlistRest ;
 
-dec_s_paramlist
-    :
-    | tipo ',' 'INTENT' '(' tipoparam ')' IDENT ';' dec_s_paramlist
+dec_d_paramlist
+    : tipo ',' INTENT_KW '(' tipoparam ')' IDENT ';'
     ;
 
-tipoparam : 'IN' | 'OUT' | 'INOUT' ;
+dec_s_paramlist
+    :
+    | dec_d_paramlist dec_s_paramlist
+    ;
+
+tipoparam : IN_KW | OUT_KW | INOUT_KW ;
 
 decfun
-    : 'FUNCTION' IDENT '(' nomparamlist ')' tipo '::' IDENT ';'
-      dec_f_paramlist 'END' 'FUNCTION' IDENT
+    : FUNCTION_KW IDENT '(' nomparamlist ')' tipo '::' IDENT ';'
+      dec_f_paramlist END_KW FUNCTION_KW IDENT
     ;
 
 dec_f_paramlist
     :
-    | tipo ',' 'INTENT' '(' 'IN' ')' IDENT ';' dec_f_paramlist
+    | dec_d_paramlist dec_f_paramlist
     ;
 
-// ── Sentencias ────────────────────────────────────────
-sentlist : sent+ ;
+sentlist     : sent sentlistRest ;
+sentlistRest :  | sent sentlistRest ;
 
 sent
     : IDENT '=' exp ';'
     | proc_call ';'
-    | 'IF' '(' expcond ')' sent
-    | 'IF' '(' expcond ')' 'THEN' sentlist 'ENDIF'
-    | 'IF' '(' expcond ')' 'THEN' sentlist 'ELSE' sentlist 'ENDIF'
-    | 'DO' 'WHILE' '(' expcond ')' sentlist 'ENDDO'
-    | 'DO' IDENT '=' doval ',' doval ',' doval sentlist 'ENDDO'
-    | 'SELECT' 'CASE' '(' exp ')' casos 'END' 'SELECT'
+    | IF_KW '(' expcond ')' sent
+    | IF_KW '(' expcond ')' THEN_KW sentlist ENDIF_KW
+    | IF_KW '(' expcond ')' THEN_KW sentlist ELSE_KW sentlist ENDIF_KW
+    | DO_KW WHILE_KW '(' expcond ')' sentlist ENDDO_KW
+    | DO_KW IDENT '=' doval ',' doval ',' doval sentlist ENDDO_KW
+    | SELECT_KW CASE_KW '(' exp ')' casos END_KW SELECT_KW
     ;
 
 doval : NUM_INT_CONST | IDENT ;
@@ -109,8 +113,8 @@ opcomp : '<' | '>' | '<=' | '>=' | '==' | '/=' ;
 
 casos
     :
-    | 'CASE' '(' etiquetas ')' sentlist casos
-    | 'CASE' 'DEFAULT' sentlist
+    | CASE_KW '(' etiquetas ')' sentlist casos
+    | CASE_KW DEFAULT_KW sentlist
     ;
 
 etiquetas
@@ -135,28 +139,25 @@ factor
 
 explist :  | ',' exp explist ;
 
-proc_call    : 'CALL' IDENT subpparamlist ;
-subpparamlist:  | '(' exp explist ')' ;
+proc_call     : CALL_KW IDENT subpparamlist ;
+subpparamlist :  | '(' exp explist ')' ;
 
-subproglist : (codproc | codfun)* ;
+subproglist :  | subprog subproglist ;
+subprog     : codproc | codfun ;
 
 codproc
-    : 'SUBROUTINE' IDENT formal_paramlist dec_s_paramlist
+    : SUBROUTINE_KW IDENT formal_paramlist dec_s_paramlist
       dcllist sentlist
-      'END' 'SUBROUTINE' IDENT
+      END_KW SUBROUTINE_KW IDENT
     ;
 
 codfun
-    : 'FUNCTION' IDENT '(' nomparamlist ')' tipo '::' IDENT ';'
+    : FUNCTION_KW IDENT '(' nomparamlist ')' tipo '::' IDENT ';'
       dec_f_paramlist
       dcllist sentlist
       IDENT '=' exp ';'
-      'END' 'FUNCTION' IDENT
+      END_KW FUNCTION_KW IDENT
     ;
-
-// ═══════════════════════════════════════════════════
-// REGLAS LÉXICAS
-// ═══════════════════════════════════════════════════
 
 PROGRAM_KW    : 'PROGRAM' ;
 END_KW        : 'END' ;

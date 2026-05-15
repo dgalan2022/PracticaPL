@@ -17,7 +17,6 @@ public class TraductorListener extends Grupo11BaseListener {
     @Override public void enterProg(Grupo11Parser.ProgContext ctx) { enMain = true; }
     @Override public void exitProg (Grupo11Parser.ProgContext ctx) { t.endMain(); }
 
-    // ── Declaraciones ────────────────────────────────────────────
     @Override
     public void enterDcl(Grupo11Parser.DclContext ctx) {
         boolean esParam = false;
@@ -56,7 +55,6 @@ public class TraductorListener extends Grupo11BaseListener {
         return base;
     }
 
-    // ── INTERFACE — prototipos ───────────────────────────────────
     @Override
     public void enterDecproc(Grupo11Parser.DecprocContext ctx) {
         String nombre        = ctx.IDENT(0).getText();
@@ -77,7 +75,6 @@ public class TraductorListener extends Grupo11BaseListener {
         t.addPrototype(tipo + " " + nombre + "(" + t.buildParams(params, tipos) + ");");
     }
 
-    // ── Procedimientos ───────────────────────────────────────────
     @Override
     public void enterCodproc(Grupo11Parser.CodprocContext ctx) {
         enMain = false; funActual = null; paramsRef.clear();
@@ -97,7 +94,6 @@ public class TraductorListener extends Grupo11BaseListener {
     @Override
     public void exitCodproc(Grupo11Parser.CodprocContext ctx) { t.endSubprog(); paramsRef.clear(); }
 
-    // ── Funciones ────────────────────────────────────────────────
     @Override
     public void enterCodfun(Grupo11Parser.CodfunContext ctx) {
         enMain = false; funActual = ctx.IDENT(0).getText(); paramsRef.clear();
@@ -113,7 +109,6 @@ public class TraductorListener extends Grupo11BaseListener {
         t.endSubprog(); funActual = null; paramsRef.clear();
     }
 
-    // ── sentlist ─────────────────────────────────────────────────
     @Override
     public void enterSentlist(Grupo11Parser.SentlistContext ctx) {
         if (nivelSwitch > 0) return;
@@ -141,13 +136,11 @@ public class TraductorListener extends Grupo11BaseListener {
         }
     }
 
-    // ── Sentencias (walker) ──────────────────────────────────────
     @Override
     public void enterSent(Grupo11Parser.SentContext ctx) {
         if (nivelSwitch > 0) return;
         String first = ctx.getChild(0) == null ? "" : ctx.getChild(0).getText();
 
-        // Asignacion
         if (ctx.IDENT() != null && ctx.exp() != null
                 && ctx.getChild(1) != null && "=".equals(ctx.getChild(1).getText())) {
             String lhs = ctx.IDENT().getText();
@@ -157,29 +150,24 @@ public class TraductorListener extends Grupo11BaseListener {
             return;
         }
 
-        // CALL
         if (ctx.proc_call() != null) { emitirCall(ctx.proc_call()); return; }
 
-        // IF sin THEN
         if ("IF".equals(first) && ctx.sent() != null) {
             t.line("if (" + t.expcondTexto(ctx.expcond()) + ") {");
             t.indent(); return;
         }
 
-        // IF THEN [ELSE] ENDIF
         if ("IF".equals(first) && !ctx.sentlist().isEmpty()) {
             t.line("if (" + t.expcondTexto(ctx.expcond()) + ") {");
             t.indent(); return;
         }
 
-        // DO WHILE
         if ("DO".equals(first) && ctx.getChildCount() > 1
                 && "WHILE".equals(ctx.getChild(1).getText())) {
             t.line("while (" + t.expcondTexto(ctx.expcond()) + ") {");
             t.indent(); return;
         }
 
-        // DO for
         if ("DO".equals(first) && ctx.IDENT() != null && ctx.doval().size() == 3) {
             String vble = ctx.IDENT().getText();
             t.line("for (" + vble + " = " + ctx.doval(0).getText()
@@ -188,7 +176,6 @@ public class TraductorListener extends Grupo11BaseListener {
             t.indent(); return;
         }
 
-        // SELECT CASE — procesado manualmente, nivelSwitch bloquea hijos
         if ("SELECT".equals(first)) {
             t.line("switch (" + t.expTexto(ctx.exp()) + ") {");
             t.indent();
@@ -203,7 +190,6 @@ public class TraductorListener extends Grupo11BaseListener {
     public void exitSent(Grupo11Parser.SentContext ctx) {
         String first = ctx.getChild(0) == null ? "" : ctx.getChild(0).getText();
 
-        // Decrementar nivelSwitch al salir del SELECT, luego ignorar
         if ("SELECT".equals(first)) {
             if (nivelSwitch > 0) nivelSwitch--;
             return;
@@ -224,11 +210,18 @@ public class TraductorListener extends Grupo11BaseListener {
         if ("DO".equals(first)) { t.dedent(); t.line("}"); }
     }
 
-    // casos bloqueados — procesados manualmente
-    @Override public void enterCasos(Grupo11Parser.CasosContext ctx) {}
-    @Override public void exitCasos (Grupo11Parser.CasosContext ctx) {}
+    private List<Grupo11Parser.SentContext> sentsDe(Grupo11Parser.SentlistContext sl) {
+        List<Grupo11Parser.SentContext> res = new ArrayList<>();
+        if (sl == null) return res;
+        res.add(sl.sent());
+        Grupo11Parser.SentlistRestContext r = sl.sentlistRest();
+        while (r != null && r.sent() != null) {
+            res.add(r.sent());
+            r = r.sentlistRest();
+        }
+        return res;
+    }
 
-    // ── Procesado manual de casos ────────────────────────────────
     private void procesarCasos(Grupo11Parser.CasosContext ctx) {
         if (ctx == null || ctx.getChildCount() == 0) return;
         if (!"CASE".equals(ctx.getChild(0).getText())) return;
@@ -240,7 +233,7 @@ public class TraductorListener extends Grupo11BaseListener {
         }
         t.indent();
         if (ctx.sentlist() != null)
-            for (Grupo11Parser.SentContext s : ctx.sentlist().sent())
+            for (Grupo11Parser.SentContext s : sentsDe(ctx.sentlist()))
                 emitirSentencia(s);
         t.line("break;");
         t.dedent();
@@ -272,11 +265,11 @@ public class TraductorListener extends Grupo11BaseListener {
         if ("IF".equals(first) && !ctx.sentlist().isEmpty()) {
             t.line("if (" + t.expcondTexto(ctx.expcond()) + ") {");
             t.indent();
-            for (Grupo11Parser.SentContext s : ctx.sentlist(0).sent()) emitirSentencia(s);
+            for (Grupo11Parser.SentContext s : sentsDe(ctx.sentlist(0))) emitirSentencia(s);
             boolean tieneElse = ctx.sentlist().size() == 2;
             if (tieneElse) {
                 t.dedent(); t.line("} else {"); t.indent();
-                for (Grupo11Parser.SentContext s : ctx.sentlist(1).sent()) emitirSentencia(s);
+                for (Grupo11Parser.SentContext s : sentsDe(ctx.sentlist(1))) emitirSentencia(s);
             }
             t.dedent(); t.line("}");
             return;
@@ -286,7 +279,7 @@ public class TraductorListener extends Grupo11BaseListener {
                 && "WHILE".equals(ctx.getChild(1).getText())) {
             t.line("while (" + t.expcondTexto(ctx.expcond()) + ") {");
             t.indent();
-            for (Grupo11Parser.SentContext s : ctx.sentlist(0).sent()) emitirSentencia(s);
+            for (Grupo11Parser.SentContext s : sentsDe(ctx.sentlist(0))) emitirSentencia(s);
             t.dedent(); t.line("}");
             return;
         }
@@ -297,7 +290,7 @@ public class TraductorListener extends Grupo11BaseListener {
                     + "; " + vble + " <= " + ctx.doval(1).getText()
                     + "; " + vble + " += " + ctx.doval(2).getText() + ") {");
             t.indent();
-            for (Grupo11Parser.SentContext s : ctx.sentlist(0).sent()) emitirSentencia(s);
+            for (Grupo11Parser.SentContext s : sentsDe(ctx.sentlist(0))) emitirSentencia(s);
             t.dedent(); t.line("}");
             return;
         }
@@ -310,7 +303,6 @@ public class TraductorListener extends Grupo11BaseListener {
         }
     }
 
-    // ── CALL con & en posiciones OUT/INOUT ───────────────────────
     private void emitirCall(Grupo11Parser.Proc_callContext pc) {
         String nombre = pc.IDENT().getText();
         Grupo11Parser.SubpparamlistContext sp = pc.subpparamlist();
@@ -338,7 +330,6 @@ public class TraductorListener extends Grupo11BaseListener {
         }
     }
 
-    // ── Utilidades ───────────────────────────────────────────────
     private void registrarPosRefs(String nombre, List<String> tparam) {
         List<Integer> posRefs = new ArrayList<>();
         for (int i = 0; i < tparam.size(); i++)

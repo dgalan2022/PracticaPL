@@ -11,7 +11,7 @@ public class Grupo11 {
     public static void main(String[] args) {
         try {
             if (args.length == 0) {
-                System.err.println("Uso: java -jar Grupo11.jar <fichero.for>");
+                System.err.println("Uso: java -jar Grupo11.jar <fichero>");
                 System.exit(1);
             }
 

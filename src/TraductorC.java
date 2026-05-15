@@ -63,7 +63,6 @@ public class TraductorC {
         actual.append("    ".repeat(Math.max(0, indent))).append(texto).append("\n");
     }
 
-    // ── Tipos ─────────────────────────────────────────────────────
     public String mapTipo(Grupo11Parser.TipoContext ctx) {
         String t = ctx.getStart().getText();
         if (t.equals("INTEGER"))   return "int";
@@ -78,7 +77,6 @@ public class TraductorC {
         return cl.NUM_INT_CONST().getText();
     }
 
-    // ── Literales ─────────────────────────────────────────────────
     public String normalizarLiteral(String s) {
         if (s == null || s.isEmpty()) return "\"\"";
         s = s.trim();
@@ -105,7 +103,6 @@ public class TraductorC {
         return raw;
     }
 
-    // ── Expresiones aritméticas ───────────────────────────────────
     public String expTexto(Grupo11Parser.ExpContext ctx) {
         if (ctx == null) return "";
         return buildExp(ctx, null);
@@ -114,17 +111,6 @@ public class TraductorC {
     public String expTextoDeref(Grupo11Parser.ExpContext ctx, List<String> paramsRef) {
         if (ctx == null) return "";
         return buildExp(ctx, paramsRef);
-    }
-
-    public String expTextoConRef(Grupo11Parser.ExpContext ctx, List<String> paramsRef) {
-        if (ctx == null) return "";
-        Grupo11Parser.FactorContext fc = ctx.factor();
-        if (fc != null && fc.IDENT() != null && fc.exp() == null
-                && (ctx.expRest() == null || ctx.expRest().op() == null)) {
-            String id = fc.IDENT().getText();
-            if (paramsRef != null && paramsRef.contains(id)) return "&" + id;
-        }
-        return buildExp(ctx, null);
     }
 
     private String buildExp(Grupo11Parser.ExpContext ctx, List<String> refs) {
@@ -140,7 +126,7 @@ public class TraductorC {
 
     private String buildFactor(Grupo11Parser.FactorContext ctx, List<String> refs) {
         if (ctx.simpvalue() != null) return simpvalueTexto(ctx.simpvalue());
-        if (ctx.IDENT() != null && ctx.exp() != null && ctx.explist() != null) {
+        if (ctx.IDENT() != null && ctx.exp() != null) {
             StringBuilder sb = new StringBuilder(ctx.IDENT().getText()).append("(");
             sb.append(buildExp(ctx.exp(), refs));
             Grupo11Parser.ExplistContext el = ctx.explist();
@@ -159,7 +145,6 @@ public class TraductorC {
         return ctx.getText();
     }
 
-    // ── Expresiones condicionales ─────────────────────────────────
     public String expcondTexto(Grupo11Parser.ExpcondContext ctx) {
         if (ctx == null) return "";
         return buildFactorcond(ctx.factorcond()) + buildExpcondRest(ctx.expcondRest());
@@ -196,7 +181,6 @@ public class TraductorC {
 
     private String mapOpcomp(String op) { return "/=".equals(op) ? "!=" : op; }
 
-    // ── SELECT CASE etiquetas ─────────────────────────────────────
     public String etiquetaTexto(Grupo11Parser.EtiquetasContext ctx) {
         if (ctx == null) return "";
         if (ctx.simpvalue() != null && !ctx.simpvalue().isEmpty())
@@ -204,7 +188,6 @@ public class TraductorC {
         return ctx.getText();
     }
 
-    // ── Parámetros ────────────────────────────────────────────────
     public List<String> extraerNomparams(Grupo11Parser.NomparamlistContext ctx) {
         List<String> ids = new ArrayList<>();
         if (ctx == null) return ids;
@@ -219,29 +202,33 @@ public class TraductorC {
 
     public List<String> tiposProc(Grupo11Parser.Dec_s_paramlistContext ctx) {
         List<String> list = new ArrayList<>();
-        for (Grupo11Parser.Dec_s_paramlistContext a = ctx; a != null && a.tipo() != null; a = a.dec_s_paramlist())
-            list.add(mapTipo(a.tipo()));
+        for (Grupo11Parser.Dec_s_paramlistContext a = ctx; a != null; a = a.dec_s_paramlist())
+            if (a.dec_d_paramlist() != null)
+                list.add(mapTipo(a.dec_d_paramlist().tipo()));
         return list;
     }
 
     public List<String> tipoparamsProc(Grupo11Parser.Dec_s_paramlistContext ctx) {
         List<String> list = new ArrayList<>();
-        for (Grupo11Parser.Dec_s_paramlistContext a = ctx; a != null && a.tipoparam() != null; a = a.dec_s_paramlist())
-            list.add(a.tipoparam().getText());
+        for (Grupo11Parser.Dec_s_paramlistContext a = ctx; a != null; a = a.dec_s_paramlist())
+            if (a.dec_d_paramlist() != null)
+                list.add(a.dec_d_paramlist().tipoparam().getText());
         return list;
     }
 
     public List<String> extraerIdentsProc(Grupo11Parser.Dec_s_paramlistContext ctx) {
         List<String> list = new ArrayList<>();
-        for (Grupo11Parser.Dec_s_paramlistContext a = ctx; a != null && a.IDENT() != null; a = a.dec_s_paramlist())
-            list.add(a.IDENT().getText());
+        for (Grupo11Parser.Dec_s_paramlistContext a = ctx; a != null; a = a.dec_s_paramlist())
+            if (a.dec_d_paramlist() != null)
+                list.add(a.dec_d_paramlist().IDENT().getText());
         return list;
     }
 
     public List<String> tiposFun(Grupo11Parser.Dec_f_paramlistContext ctx) {
         List<String> list = new ArrayList<>();
-        for (Grupo11Parser.Dec_f_paramlistContext a = ctx; a != null && a.tipo() != null; a = a.dec_f_paramlist())
-            list.add(mapTipo(a.tipo()));
+        for (Grupo11Parser.Dec_f_paramlistContext a = ctx; a != null; a = a.dec_f_paramlist())
+            if (a.dec_d_paramlist() != null)
+                list.add(mapTipo(a.dec_d_paramlist().tipo()));
         return list;
     }
 
@@ -264,7 +251,6 @@ public class TraductorC {
         return String.join(", ", res);
     }
 
-    // ── Código final ──────────────────────────────────────────────
     public String getCodigo() {
         StringBuilder sb = new StringBuilder();
         if (defines.length()    > 0) sb.append(defines).append("\n");

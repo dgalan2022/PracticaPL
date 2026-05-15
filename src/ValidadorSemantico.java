@@ -6,26 +6,40 @@ public class ValidadorSemantico {
     private final List<String> errores = new ArrayList<>();
 
     public void validar(Grupo11Parser.ProgContext ctx) {
-        // Comprobación nombre inicial y final del PROGRAM
         String nombreInicial = ctx.IDENT(0).getText();
         String nombreFinal   = ctx.IDENT(1).getText();
         if (!nombreInicial.equalsIgnoreCase(nombreFinal))
             err("PROGRAM: nombre inicial '" + nombreInicial + "' != final '" + nombreFinal + "'");
 
-        if (ctx.cabecera() != null && ctx.cabecera().cablist() != null) {
-            for (int i = 0; i < ctx.cabecera().cablist().getChildCount(); i++) {
-                Object hijo = ctx.cabecera().cablist().getChild(i);
-                if (hijo instanceof Grupo11Parser.DecsubprogContext d) {
-                    if (d.decproc() != null) chkDecproc(d.decproc());
-                    if (d.decfun()  != null) chkDecfun(d.decfun());
-                }
-            }
-        }
-        for (int i = 0; i < ctx.subproglist().getChildCount(); i++) {
-            Object hijo = ctx.subproglist().getChild(i);
-            if (hijo instanceof Grupo11Parser.CodprocContext cp) chkCodproc(cp);
-            if (hijo instanceof Grupo11Parser.CodfunContext  cf) chkCodfun(cf);
-        }
+        if (ctx.cabecera() != null && ctx.cabecera().cablist() != null)
+            revisarCablist(ctx.cabecera().cablist());
+        revisarSubproglist(ctx.subproglist());
+    }
+
+    private void revisarCablist(Grupo11Parser.CablistContext cab) {
+        if (cab == null) return;
+        revisarDecsubprog(cab.decsubprog());
+        revisarCablistRest(cab.cablistRest());
+    }
+
+    private void revisarCablistRest(Grupo11Parser.CablistRestContext rest) {
+        if (rest == null || rest.decsubprog() == null) return;
+        revisarDecsubprog(rest.decsubprog());
+        revisarCablistRest(rest.cablistRest());
+    }
+
+    private void revisarDecsubprog(Grupo11Parser.DecsubprogContext d) {
+        if (d == null) return;
+        if (d.decproc() != null) chkDecproc(d.decproc());
+        if (d.decfun()  != null) chkDecfun(d.decfun());
+    }
+
+    private void revisarSubproglist(Grupo11Parser.SubproglistContext lista) {
+        if (lista == null || lista.subprog() == null) return;
+        Grupo11Parser.SubprogContext sp = lista.subprog();
+        if (sp.codproc() != null) chkCodproc(sp.codproc());
+        if (sp.codfun()  != null) chkCodfun(sp.codfun());
+        revisarSubproglist(lista.subproglist());
     }
 
     private void chkDecproc(Grupo11Parser.DecprocContext ctx) {
@@ -106,21 +120,17 @@ public class ValidadorSemantico {
 
     private List<String> extraerProc(Grupo11Parser.Dec_s_paramlistContext ctx) {
         List<String> ids = new ArrayList<>();
-        Grupo11Parser.Dec_s_paramlistContext a = ctx;
-        while (a != null && a.IDENT() != null) {
-            ids.add(a.IDENT().getText());
-            a = a.dec_s_paramlist();
-        }
+        for (Grupo11Parser.Dec_s_paramlistContext a = ctx; a != null; a = a.dec_s_paramlist())
+            if (a.dec_d_paramlist() != null)
+                ids.add(a.dec_d_paramlist().IDENT().getText());
         return ids;
     }
 
     private List<String> extraerFun(Grupo11Parser.Dec_f_paramlistContext ctx) {
         List<String> ids = new ArrayList<>();
-        Grupo11Parser.Dec_f_paramlistContext a = ctx;
-        while (a != null && a.IDENT() != null) {
-            ids.add(a.IDENT().getText());
-            a = a.dec_f_paramlist();
-        }
+        for (Grupo11Parser.Dec_f_paramlistContext a = ctx; a != null; a = a.dec_f_paramlist())
+            if (a.dec_d_paramlist() != null)
+                ids.add(a.dec_d_paramlist().IDENT().getText());
         return ids;
     }
 
